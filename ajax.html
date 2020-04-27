@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>查询</title>
+    <!-- Bootstrap core CSS -->
+    <link href="https://cdn.bootcss.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet">
+
+    <style rel="stylesheet">
+        body {
+            padding-top: 70px;
+        }
+    </style>
+    <style type="text/css">
+        .my-coin {
+            font-size: 18px
+        }
+
+        .totla-coin {
+            font-size: 26px;
+            font-weight: bold;
+            color: #FF0000
+        }
+
+        .use-coin {
+            color: #FF0000
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+        <span class="navbar-brand" href="#">查询</span>
+    </nav>
+
+    <div class="container">
+        <form action="" method="post">
+            <div class="form-group">
+                <span style="color:red;padding-right:3px;">*</span>
+                <label for="guideid">手机号:</label>
+                <input type="text" class="form-control" id="mobile" placeholder="手机号" required>
+            </div>
+        </form>
+
+        <button id="submit" class="btn btn-primary btn-block">查询</button>
+        <hr>
+        <div align="center">
+            <p>&nbsp; </p>
+            <div align="center">
+                <p class="my-coin">我的积分:&nbsp;<span id="totalCoin" class="totla-coin">0</span> </p>
+            </div>
+            <div align="center">
+                <p>可用：<span class="use-coin" id="currentCoin">0</span>
+                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;不可用：<span class="use-coin"
+                        id="currentLockCoin">0</span></p>
+            </div>
+        </div>
+
+    </div>
+    <script src="https://cdn.bootcss.com/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://cdn.bootcss.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="js/utils.js"></script>
+
+    <script>
+
+        //解决IOS alert弹窗显示IP地址问题
+        window.alert = function (name) {
+            var iframe = document.createElement("IFRAME");
+            iframe.style.display = "none";
+            document.documentElement.appendChild(iframe);
+            window.frames[0].window.alert(name);
+            iframe.parentNode.removeChild(iframe);
+        }
+
+        $(window).load(function () {            
+            var queryMobile = getQueryVariable('mobile');
+            if (queryMobile) {
+                $('#mobile').val(queryMobile);
+            }
+        });
+
+        $("#submit").click(function () {
+            $('#submit').attr('disabled', true);
+            var url = 'http://127.0.0.1:8080/test/';
+            var mobile = $('#mobile').val();
+
+            if (!mobile) {
+                alert('请输入手机号');
+                $('#submit').attr('disabled', false);
+                return;
+            }
+
+            if (!(/^1[3456789]\d{9}$/.test(mobile))) {
+                alert("手机号码有误，请重新填写");
+                $('#submit').attr('disabled', false);
+                return;
+            }
+
+            window.history.pushState(
+                {},
+                document.title,
+                window.location.pathname + '?mobile=' + mobile
+            );
+
+            url += mobile;
+            //  return;
+            $.ajax({
+                url: url,
+                async: true,
+                type: 'get',
+                dataType: 'jsonp',
+                jsonp: "callback",
+                jsonpCallback: "jsonp_callback",
+                contentType: "application/x-www-form-urlencoded;charset=UTF-8",
+                error: function (x) {
+                    alert("error");
+                    $('#submit').attr('disabled', false);
+                },
+                success: function (res) {
+                    var json = eval(res);
+
+                    if (json != null && json.success == true && json.shopinCoin != null) {
+                        var totalCoin = json.shopinCoin.totalCoin;
+                        var currentCoin = json.shopinCoin.currentCoin;
+                        var currentLockCoin = json.shopinCoin.currentLockCoin;
+                        // alert((Math.floor(totalCoin)));
+                        totalCoin = Math.floor(totalCoin);
+                        currentCoin = Math.floor(currentCoin);
+                        currentLockCoin = totalCoin - currentCoin;
+
+                        $('#totalCoin').html(totalCoin);
+                        $('#currentCoin').html(currentCoin);
+                        $('#currentLockCoin').html(currentLockCoin);
+                        $('#submit').attr('disabled', false);
+                    } else {
+                        $('#totalCoin').html(' ');
+                        $('#currentCoin').html(' ');
+                        $('#currentLockCoin').html(' ');
+                        alert("未查询到积分数量，请核实会员手机号!");
+                        $('#mobile').val('');
+                        $('#submit').attr('disabled', false);
+                    }
+                }
+            })
+        })
+
+    </script>
+</body>
+
+</html>

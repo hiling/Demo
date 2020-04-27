@@ -1,0 +1,27 @@
+
+<html>
+
+<body>
+    Key:<input type="text" id="cookiename" name="cookiename" value="name">
+    Value:<input type="text" id="cookievalue" name="cookievalue" value="hiling">
+    Domain:<input type="text" id="cookieDomain" name="cookieDomain">
+
+    <input type="button" value="set cookie"
+        onclick="javascript:setCookie()" />
+
+    <input type="button" value="get cookie" onclick="javascript:alert(document.cookie)">
+
+    <script>
+        document.getElementById('cookieDomain').value = document.domain;
+
+        function setCookie() {
+            document.cookie = document.getElementById('cookiename').value + '='
+                + document.getElementById('cookievalue').value
+                + ';path=/;domain='
+                + document.getElementById('cookieDomain').value + ';';
+        }
+    </script>
+
+</body>
+
+</html>
